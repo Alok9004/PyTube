@@ -1,0 +1,249 @@
+{% extends 'home/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh;">
+    <div class="container">
+        <!-- Search Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex align-items-center mb-3">
+                    <a href="{% url 'home:home' %}" class="btn btn-outline-light btn-sm me-3">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <h2 class="text-light mb-0">Search Results</h2>
+                </div>
+                
+                <!-- Search Box -->
+                <div class="card bg-dark border-light">
+                    <div class="card-body">
+                        <form method="get" action="{% url 'home:search' %}" class="d-flex">
+                            <input type="text" 
+                                   name="q" 
+                                   value="{{ query }}" 
+                                   class="form-control form-control-lg bg-dark text-light border-light" 
+                                   placeholder="Search for videos, channels..." 
+                                   style="border-right: none;">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Results Summary -->
+                {% if query %}
+                <div class="mt-3">
+                    <p class="text-light mb-1">
+                        {% if results.total_results > 0 %}
+                            Found {{ results.total_results }} result{{ results.total_results|pluralize }} for 
+                            <span class="text-primary">"{{ query }}"</span>
+                        {% else %}
+                            No results found for <span class="text-primary">"{{ query }}"</span>
+                        {% endif %}
+                    </p>
+                    <small class="text-muted">Searching in video titles, descriptions, and channel names</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if query %}
+            <!-- Channels Results -->
+            {% if results.channels %}
+            <div class="row mb-5">
+                <div class="col-12">
+                    <h4 class="text-light mb-4">
+                        <i class="bi bi-collection-play text-primary me-2"></i>
+                        Channels ({{ results.channels|length }})
+                    </h4>
+                    <div class="row">
+                        {% for channel in results.channels %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card channel-card h-100 bg-dark border-light">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        {% if channel.ch_logo %}
+                                            <img src="{{ channel.ch_logo }}" 
+                                                 alt="{{ channel.name }}" 
+                                                 class="rounded-circle me-3"
+                                                 style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3"
+                                                 style="width: 50px; height: 50px;">
+                                                <i class="bi bi-play-btn text-white"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h5 class="card-title text-light mb-1">{{ channel.name }}</h5>
+                                            <small class="text-muted">By {{ channel.owner.username }}</small>
+                                        </div>
+                                    </div>
+                                    <p class="card-text text-muted">{{ channel.description|truncatewords:15 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar me-1"></i>
+                                            {{ channel.created_at|date:"M d, Y" }}
+                                        </small>
+                                        <a href="{% url 'channels:detail' channel.id %}" class="btn btn-primary btn-sm">
+                                            View Channel
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Videos Results -->
+            {% if results.videos %}
+            <div class="row">
+                <div class="col-12">
+                    <h4 class="text-light mb-4">
+                        <i class="bi bi-play-circle text-primary me-2"></i>
+                        Videos ({{ results.videos|length }})
+                    </h4>
+                    <div class="row">
+                        {% for video in results.videos %}
+                        <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+                            <div class="card video-card h-100 bg-dark border-light">
+                                <!-- Thumbnail -->
+                                <div class="position-relative">
+                                    {% if video.thumbnail_url %}
+                                        <img src="{{ video.thumbnail_url }}" 
+                                             class="card-img-top" 
+                                             alt="{{ video.title }}"
+                                             style="height: 200px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-secondary"
+                                             style="height: 200px;">
+                                            <i class="bi bi-play-circle-fill text-light" style="font-size: 3rem;"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="position-absolute bottom-0 end-0 m-2">
+                                        <span class="badge bg-dark bg-opacity-75 text-light">
+                                            {{ video.duration|time:"H:i:s" }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <h6 class="card-title text-light mb-2" style="font-weight: 600;">
+                                        {{ video.title|truncatewords:8 }}
+                                    </h6>
+                                    
+                                    <div class="d-flex align-items-center mb-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-collection-play me-1"></i>
+                                            {{ video.channel.name }}
+                                        </small>
+                                    </div>
+                                    
+                                    <p class="card-text text-muted small mb-3">
+                                        {{ video.description|truncatewords:12|default:"No description available" }}
+                                    </p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>
+                                            {{ video.uploaded_at|timesince }} ago
+                                        </small>
+                                        <a href="{% url 'videos:video_detail' video.id %}" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-play-fill me-1"></i>
+                                            Watch
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- No Results Message -->
+            {% if results.total_results == 0 %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="bi bi-search display-1 text-muted"></i>
+                        </div>
+                        <h4 class="text-light mb-3">No results found</h4>
+                        <p class="text-muted mb-4">
+                            We couldn't find any videos or channels matching "{{ query }}".<br>
+                            Try different keywords or browse our channels.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{% url 'channels:list' %}" class="btn btn-primary">
+                                <i class="bi bi-collection-play me-2"></i>
+                                Browse Channels
+                            </a>
+                            <a href="{% url 'home:home' %}" class="btn btn-outline-light">
+                                <i class="bi bi-house me-2"></i>
+                                Go Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- Empty Search State -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="bi bi-search display-1 text-primary"></i>
+                        </div>
+                        <h4 class="text-light mb-3">Start Searching</h4>
+                        <p class="text-muted mb-4">
+                            Enter keywords to find videos and channels.<br>
+                            You can search by title, description, or channel name.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .channel-card, .video-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .channel-card:hover, .video-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(59, 130, 246, 0.3);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-img-top {
+        border-radius: 0.375rem 0.375rem 0 0;
+    }
+
+    .form-control:focus {
+        background-color: rgba(30, 41, 59, 0.8);
+        border-color: #3b82f6;
+        color: #ffffff;
+        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}

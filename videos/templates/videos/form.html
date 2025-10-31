@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="text-center mb-4">
+        {% if video %}Edit Video{% else %}Add New Video{% endif %}
+    </h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="id_title" class="form-label fw-bold">Title</label>
+            {{ form.title|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_youtube_url" class="form-label fw-bold">YouTube URL</label>
+            {{ form.youtube_url|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_order" class="form-label fw-bold">Order</label>
+            {{ form.order|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_description" class="form-label fw-bold">Description</label>
+            {{ form.description|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_duration" class="form-label fw-bold">Duration</label>
+            {{ form.duration|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_thumbnail_url" class="form-label fw-bold">Thumbnail URL</label>
+            {{ form.thumbnail_url|add_class:"form-control" }}
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% if video %}{% url 'videos:video_detail' video.id %}{% else %}{% url 'videos:video_list' channel.id %}{% endif %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.btn {
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #fff;
+    transition: transform 0.2s, opacity 0.2s;
+}
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

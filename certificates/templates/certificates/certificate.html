@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Certificate</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 40px;
+        border: 12px solid black;
+        width: 800px;
+        margin: auto;
+    }
+    .logo {
+        width: 120px;
+        margin-bottom: 10px;
+    }
+    h1 {
+        font-size: 38px;
+        margin-top: 0;
+        font-weight: bold;
+    }
+    h3 {
+        font-size: 22px;
+        font-weight: normal;
+    }
+    .name {
+        font-size: 30px;
+        font-weight: bold;
+        margin: 10px 0;
+        text-transform: capitalize;
+    }
+    .course {
+        font-size: 22px;
+        font-weight: bold;
+        color: #444;
+    }
+    .footer {
+        margin-top: 40px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .signature {
+        width: 150px;
+        border-top: 2px solid black;
+        font-size: 14px;
+        text-align: center;
+    }
+    .qr {
+        width: 100px;
+    }
+</style>
+</head>
+<body>
+
+    <img src="{{ logo_path }}" class="logo" alt="Logo">
+
+    <h1>Certificate of Completion</h1>
+
+    <h3>This certificate is proudly presented to</h3>
+
+    <div class="name">{{ user.get_full_name|default:user.username }}</div>
+
+    <h3>For successfully completing</h3>
+
+    <div class="course">{{ course.title }}</div>
+
+    <p>Date: {{ issue_date }}</p>
+
+    <img src="data:image/png;base64,{{ qr_code }}" class="qr" alt="QR Code">
+
+    <div class="footer">
+        <div class="signature">
+            Instructor Signature
+        </div>
+
+        <div class="signature">
+            Platform Admin
+        </div>
+    </div>
+
+</body>
+</html>

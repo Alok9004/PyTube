@@ -1,0 +1,90 @@
+{% extends "channels/base.html" %}
+
+{% block title %}{{ view.action|default:"Create" }} Channel{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="bg-dark text-light p-5 rounded-4 shadow-lg" style="max-width: 700px; margin: auto;">
+
+    <h2 class="fw-bold text-primary mb-4 text-center">
+      {{ view.action|default:"Create" }} Channel
+    </h2>
+
+    <form method="post" class="needs-validation" novalidate>
+      {% csrf_token %}
+      <div class="mb-4">
+        {{ form.as_p }}
+      </div>
+
+      <div class="text-center mt-4">
+        <button type="submit" class="btn gradient-btn me-3">💾 Save</button>
+        <a href="{% url 'channels:list' %}" class="btn gradient-secondary">Cancel</a>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<style>
+  /* Input and label styling */
+  form p {
+    margin-bottom: 1.5rem;
+  }
+
+  label {
+    font-weight: 600;
+    color: #a5b4fc;
+  }
+
+  input[type="text"],
+  textarea {
+    background-color: #1f2937;
+    color: #f9fafb;
+    border: 1px solid #374151;
+    border-radius: 8px;
+    padding: 10px 12px;
+    width: 100%;
+    transition: all 0.3s ease;
+  }
+
+  input[type="text"]:focus,
+  textarea:focus {
+    border-color: #6366f1;
+    outline: none;
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+  }
+
+  /* Gradient buttons (matches site-wide theme) */
+  .gradient-btn {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  .gradient-btn:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.45);
+  }
+
+  .gradient-secondary {
+    background: linear-gradient(135deg, #6b7280, #374151);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+
+  .gradient-secondary:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #4b5563, #1f2937);
+  }
+</style>
+{% endblock %}

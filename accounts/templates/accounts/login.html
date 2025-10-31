@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        form {
+            background-color: #fff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        input{
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 16px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 26px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        p {
+            text-align: center;
+            margin-top: 16px;
+        }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        #id a{
+            color: #0562c5;
+        }
+        #id a:hover{
+            text-decoration: underline;
+        }
+        #end{
+           border: 1px solid #0562c5;
+           background: #0562c5;
+           padding: 15px 10px;
+           border-radius: 6px;
+        }
+        #end a{
+            color: white;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <form method="post">
+        <h2>Login</h2>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Log in</button>    
+        <!-- <p>Don't have an account? <a href="{% url 'accounts:register' %}">Register</a></p> -->
+        <p id="id"><a href="{% url 'accounts:forgot_password' %}">Forgot Password?</a></p>
+        <br>
+        <p id="end"><a href="{% url 'accounts:register' %}">Create new account</a></p>
+    </form>
+</body>
+</html>

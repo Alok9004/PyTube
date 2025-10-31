@@ -1,0 +1,57 @@
+{% extends "channels/base.html" %}
+
+{% block title %}Delete Channel{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="bg-dark text-light p-5 rounded-4 shadow-lg text-center" style="max-width: 600px; margin: auto;">
+
+    <h2 class="fw-bold text-danger mb-4">⚠ Delete Channel</h2>
+    <p class="lead mb-4">
+      Are you sure you want to permanently delete 
+      <strong class="text-warning">"{{ object.name }}"</strong>?
+    </p>
+    <p class="text-muted">This action cannot be undone and will remove all associated videos.</p>
+
+    <form method="post" class="mt-4">
+      {% csrf_token %}
+      <button type="submit" class="btn gradient-danger me-3">🗑 Yes, Delete</button>
+      <a href="{% url 'channels:detail' object.pk %}" class="btn gradient-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+
+<style>
+  .gradient-danger {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+  }
+
+  .gradient-danger:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #dc2626, #7f1d1d);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+  }
+
+  .gradient-secondary {
+    background: linear-gradient(135deg, #6b7280, #374151);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+
+  .gradient-secondary:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #4b5563, #1f2937);
+  }
+</style>
+{% endblock %}
