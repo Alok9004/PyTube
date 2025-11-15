@@ -7,7 +7,22 @@ from django.http import JsonResponse
 from django.utils.timezone import now
 from django.db.models import Sum
 import json
-# Create your views here.
+import re
+
+def extract_youtube_id(url):
+    """Extract YouTube video ID from various URL formats"""
+    patterns = [
+        r'(?:youtube\.com\/watch\?v=|\
+youtu\.be\/|youtube\.com\/embed\/)([^&?\n]+)',
+        r'youtube\.com\/watch\?.*v=([^&?\n]+)',
+        r'youtu\.be\/([^&?\n]+)'
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    return None
 
 def video_list(request, channel_id):
     channel = get_object_or_404(Channel, id=channel_id)
@@ -46,6 +61,9 @@ def video_detail(request, video_id):
     next_video = video.channel.videos.filter(order__gt=video.order).order_by('order').first()
     videos = video.channel.videos.all().order_by('order')
 
+    # Extract YouTube ID for template
+    youtube_id = extract_youtube_id(video.youtube_url)
+
     progress_dict = {}
     total_duration = 0
     total_watched_seconds = 0
@@ -72,10 +90,11 @@ def video_detail(request, video_id):
         'next_video': next_video,
         'videos': videos,
         'progress_dict': progress_dict,
-        'progress': current_progress,  # Add this for current video progress
+        'progress': current_progress,
         'all_completed': all_completed,
         'total_duration': total_duration,
         'total_watched_seconds': total_watched_seconds,
+        'youtube_id': youtube_id,  # Pass YouTube ID directly
     }
 
     return render(request, 'videos/detail.html', context)
@@ -84,41 +103,44 @@ def video_detail(request, video_id):
 @login_required
 def save_progress(request, video_id):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        new_time = data.get('current_time', 0)
-        new_percentage = data.get('watched_percentage', 0)
+        try:
+            data = json.loads(request.body)
+            new_time = float(data.get('current_time', 0))
+            new_percentage = float(data.get('watched_percentage', 0))
 
-        progress, _ = VideoProgress.objects.get_or_create(
-            user=request.user,
-            video_id=video_id
-        )
+            progress, created = VideoProgress.objects.get_or_create(
+                user=request.user,
+                video_id=video_id
+            )
 
-        # ✅ Only update forward (never backward)
-        if new_time > progress.current_time:
-            progress.current_time = new_time
-        if new_percentage > progress.watched_percentage:
-            progress.watched_percentage = new_percentage
+            # Only update if significant progress (reduce API calls)
+            time_diff = new_time - progress.current_time
+            percent_diff = new_percentage - progress.watched_percentage
+            
+            if (time_diff >= 10 or percent_diff >= 10 or new_percentage >= 95 or created):
+                progress.current_time = max(progress.current_time, new_time)
+                progress.watched_percentage = max(progress.watched_percentage, new_percentage)
+                progress.last_watched = now()
+                progress.save()
+                print(f"Progress saved: {new_time}s, {new_percentage}%")
 
-        progress.last_watched = now()
-        progress.save()
-
-        return JsonResponse({
-            'status': 'success',
-            'current_time': progress.current_time,
-            'watched_percentage': progress.watched_percentage
-        })
+            return JsonResponse({
+                'status': 'success',
+                'current_time': progress.current_time,
+                'watched_percentage': progress.watched_percentage
+            })
+            
+        except (ValueError, json.JSONDecodeError) as e:
+            print(f"Progress save error: {e}")
+            return JsonResponse({'error': 'Invalid data'}, status=400)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
-
-
 def convert_to_embed(youtube_url):
-    if "watch?v=" in youtube_url:
-        video_id = youtube_url.split("v=")[-1].split("&")[0]
-        return f"https://www.youtube.com/embed/{video_id}"
-    elif "youtu.be/" in youtube_url:
-        video_id = youtube_url.split("/")[-1]
+    """Convert YouTube URL to embed format"""
+    video_id = extract_youtube_id(youtube_url)
+    if video_id:
         return f"https://www.youtube.com/embed/{video_id}"
     return youtube_url
 
@@ -146,7 +168,6 @@ def video_edit(request, video_id):
         form = VideoForm(request.POST, instance=video)
         if form.is_valid():
             video = form.save(commit=False)
-            # Convert YouTube URL to embed
             video.youtube_url = convert_to_embed(video.youtube_url)
             video.save()
             return redirect('videos:video_detail', video_id=video.id)
@@ -163,11 +184,12 @@ def video_delete(request, video_id):
         return redirect('videos:video_list', channel_id=video.channel.id)
     return render(request, 'videos/confirm_delete.html', {'video': video})
 
+
 def ajax_video_search(request):
     query = request.GET.get('q', '')
     results = []
     if query:
-        videos = Video.objects.filter(title__icontains=query)[:5]  # limit results
+        videos = Video.objects.filter(title__icontains=query)[:5]
         for video in videos:
             results.append({
                 'id': video.id,
@@ -175,4 +197,3 @@ def ajax_video_search(request):
                 'thumbnail': video.thumbnail.url if video.thumbnail else '',
             })
     return JsonResponse({'results': results})
-

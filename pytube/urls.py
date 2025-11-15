@@ -7,5 +7,6 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),  
     path('channels/', include(('channels.urls', 'channels'), namespace='channels')),
     path('videos/', include(('videos.urls', 'videos'), namespace='videos')),
+    path('roadmaps/', include('roadmap.urls')),
     path('', include(('home.urls'), namespace='home')),
 ]

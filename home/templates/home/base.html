@@ -90,6 +90,22 @@
                     </ul>
 
                     <ul class="navbar-nav ms-auto align-items-center">
+                    
+                    
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'roadmap:my_roadmaps' %}">
+                            <i class="bi bi-journey"></i> My Roadmaps
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'roadmap:roadmap_list' %}">
+                            <i class="bi bi-journey"></i> Roadmaps
+                        </a>
+                    </li>
+                    {% endif %}
+
                         {% if user.is_authenticated %}
                             <li class="nav-item">
                                 <span class="navbar-text text-light me-2">Hi, {{ user.username }}</span>

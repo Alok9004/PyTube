@@ -672,10 +672,23 @@
             <!-- Navbar content -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
-                    <!-- Channels link -->
-                    <li class="nav-item me-3">
-                        <a class="nav-link" href="{% url 'channels:list' %}">Channels</a>
+
+                    
+                    <!-- Roadmap link -->
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'roadmap:my_roadmaps' %}">
+                            <i class="bi bi-journey"></i> My Roadmaps
+                        </a>
                     </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'roadmap:roadmap_list' %}">
+                            <i class="bi bi-journey"></i> Roadmaps
+                        </a>
+                    </li>
+                    {% endif %}
+
 
                     <!-- Search form -->
                     <form id="search-form" class="d-flex me-3 position-relative" method="get" action="{% url 'home:search' %}">
