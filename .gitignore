@@ -10,7 +10,6 @@ env/
 
 # Ignore Django migration cache
 *.log
-*.sqlite3
 *.migrations/
 
 # Ignore OS/system files
