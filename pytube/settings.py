@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'videos',
     'home',
     'widget_tweaks',
-    'roadmap',
+    'roadmaps',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ roadmap.title }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="card bg-light mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6">{{ roadmap.title }}</h1>
+                <p class="lead mb-3">{{ roadmap.description }}</p>
+                
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge badge-difficulty-{{ roadmap.difficulty }}">
+                        {{ roadmap.get_difficulty_display }}
+                    </span>
+                    <span class="badge bg-info">{{ roadmap.estimated_hours }} hours</span>
+                    <span class="badge bg-secondary">{{ roadmap.channels.count }} channels</span>
+                    <span class="badge bg-primary">{{ roadmap.followers.count }} followers</span>
+                </div>
+                
+                <p class="text-muted mb-0">
+                    Created by <strong>{{ roadmap.owner.username }}</strong> • {{ roadmap.created_at|date:"M d, Y" }}
+                </p>
+            </div>
+            
+            <div class="col-md-4 text-end">
+                {% if user.is_authenticated %}
+                    {% if user == roadmap.owner %}
+                        <div class="btn-group">
+                            <a href="{% url 'roadmaps:update' roadmap.id %}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="{% url 'roadmaps:delete' roadmap.id %}" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </div>
+                    {% else %}
+                        {% if is_following %}
+                            <form method="post" action="{% url 'roadmaps:unfollow' roadmap.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-user-minus"></i> Unfollow
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{% url 'roadmaps:follow' roadmap.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Follow Roadmap
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Section for Followers -->
+{% if is_following and user_follow %}
+<div class="card mb-4 {% if user_follow.is_completed %}border-success{% endif %}">
+    <div class="card-header {% if user_follow.is_completed %}bg-success text-white{% else %}bg-primary text-white{% endif %}">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">
+                {% if user_follow.is_completed %}
+                    🎉 Roadmap Completed!
+                {% else %}
+                    📊 Your Progress
+                {% endif %}
+            </h4>
+            {% if user_follow.is_completed %}
+                <span class="badge bg-light text-success">
+                    <i class="fas fa-trophy"></i> Completed
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="border rounded p-3">
+                    <h3 class="text-primary mb-1">{{ overall_progress }}%</h3>
+                    <small class="text-muted">Video Progress</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="border rounded p-3">
+                    <h3 class="text-success mb-1">{{ total_completed_videos }}/{{ total_videos }}</h3>
+                    <small class="text-muted">Videos Completed</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="border rounded p-3">
+                    <h3 class="text-info mb-1">{{ user_follow.current_channel_order }}/{{ roadmap.channels.count }}</h3>
+                    <small class="text-muted">Channels Progress</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="border rounded p-3">
+                    <h3 class="text-warning mb-1">{{ total_watched_hours }}h</h3>
+                    <small class="text-muted">Time Watched</small>
+                </div>
+            </div>
+        </div>
+
+        {% if not user_follow.is_completed %}
+        <div class="mt-4 text-center">
+            <div class="btn-group">
+                <form method="post" action="{% url 'roadmaps:update_progress' roadmap.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="next">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-circle"></i> Mark Next Channel Complete
+                    </button>
+                </form>
+                <form method="post" action="{% url 'roadmaps:auto_update' roadmap.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-info">
+                        <i class="fas fa-sync"></i> Auto-Update Progress
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Learning Path -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">
+            <i class="fas fa-map-signs"></i> Learning Path
+            <small class="text-muted">({{ roadmap.channels.count }} channels)</small>
+        </h4>
+        {% if user == roadmap.owner %}
+        <a href="{% url 'roadmaps:add_channel' roadmap.id %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Add Channel
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for item in channels_with_progress %}
+            <div class="list-group-item {% if user_follow and user_follow.current_channel_order >= item.roadmap_channel.order %}channel-complete{% elif user_follow and user_follow.current_channel_order|add:1 == item.roadmap_channel.order %}channel-current{% endif %}">
+                <div class="row align-items-center">
+                    <div class="col-md-1 text-center">
+                        <span class="badge {% if user_follow and user_follow.current_channel_order >= item.roadmap_channel.order %}bg-success{% elif user_follow and user_follow.current_channel_order|add:1 == item.roadmap_channel.order %}bg-primary{% else %}bg-secondary{% endif %}">
+                            #{{ item.roadmap_channel.order }}
+                        </span>
+                    </div>
+                    
+                    <div class="col-md-7">
+                        <h6 class="mb-1">
+                            <a href="{% url 'channels:detail' item.roadmap_channel.channel.id %}" class="text-decoration-none">
+                                {{ item.roadmap_channel.channel.name }}
+                            </a>
+                        </h6>
+                        <p class="mb-1 text-muted small">{{ item.roadmap_channel.channel.description|truncatewords:20 }}</p>
+                        
+                        <div class="d-flex align-items-center mt-2">
+                            <div class="progress progress-thin flex-grow-1 me-2" style="max-width: 200px;">
+                                <div class="progress-bar {% if item.progress == 100 %}bg-success{% else %}bg-info{% endif %}" 
+                                     style="width: {{ item.progress }}%">
+                                </div>
+                            </div>
+                            <small class="text-muted">
+                                {{ item.progress }}% ({{ item.completed_videos }}/{{ item.total_videos }} videos)
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group">
+                            <a href="{% url 'videos:video_list' item.roadmap_channel.channel.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-play"></i> Watch Videos
+                            </a>
+                            {% if user == roadmap.owner %}
+                            <form method="post" action="{% url 'roadmaps:remove_channel' roadmap.id item.roadmap_channel.channel.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="list-group-item text-center py-5">
+                <i class="fas fa-road fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No channels in this roadmap yet</h5>
+                {% if user == roadmap.owner %}
+                <a href="{% url 'roadmaps:add_channel' roadmap.id %}" class="btn btn-primary">Add First Channel</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+{% if user.is_authenticated and not user == roadmap.owner %}
+<div class="card mt-4">
+    <div class="card-body text-center">
+        {% if is_following %}
+            <a href="{% url 'videos:video_list' roadmap.channels.first.channel.id %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-play"></i> 
+                {% if user_follow and user_follow.current_channel_order > 0 %}Continue Learning{% else %}Start Learning{% endif %}
+            </a>
+        {% else %}
+            <form method="post" action="{% url 'roadmaps:follow' roadmap.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus"></i> Follow This Roadmap
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

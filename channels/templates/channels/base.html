@@ -90,17 +90,13 @@
 
                         {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'roadmap:my_roadmaps' %}">
-                                <i class="bi bi-journey"></i> My Roadmaps
-                            </a>
+                            <a class="nav-link" href="{% url 'roadmaps:my_roadmaps' %}">My Roadmaps</a>
                         </li>
                         {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'roadmap:roadmap_list' %}">
-                                <i class="bi bi-journey"></i> Roadmaps
-                            </a>
+                            <a class="nav-link" href="{% url 'roadmaps:list' %}">Roadmaps</a>
                         </li>
-                    {% endif %}
+                        {% endif %}
 
                     </ul>
 

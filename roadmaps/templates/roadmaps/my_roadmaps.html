@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}My Roadmaps{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">My Learning Dashboard</h1>
+
+<!-- Statistics -->
+<div class="row mb-5">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card text-center bg-primary text-white">
+            <div class="card-body">
+                <h3 class="card-title">{{ stats.created_count }}</h3>
+                <p class="card-text">Created</p>
+                <i class="fas fa-map fa-2x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card text-center bg-success text-white">
+            <div class="card-body">
+                <h3 class="card-title">{{ stats.following_count }}</h3>
+                <p class="card-text">Following</p>
+                <i class="fas fa-bookmark fa-2x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card text-center bg-warning text-white">
+            <div class="card-body">
+                <h3 class="card-title">{{ stats.completed_count }}</h3>
+                <p class="card-text">Completed</p>
+                <i class="fas fa-trophy fa-2x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card text-center bg-info text-white">
+            <div class="card-body">
+                <h3 class="card-title">{{ stats.total_watched_hours }}</h3>
+                <p class="card-text">Hours Learned</p>
+                <i class="fas fa-clock fa-2x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Created Roadmaps -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0"><i class="fas fa-edit"></i> My Created Roadmaps</h4>
+        <a href="{% url 'roadmaps:create' %}" class="btn btn-primary btn-sm">Create New</a>
+    </div>
+    <div class="card-body">
+        {% if created_roadmaps %}
+        <div class="row">
+            {% for roadmap in created_roadmaps %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ roadmap.title }}</h6>
+                        <p class="card-text text-muted small">{{ roadmap.description|truncatewords:15 }}</p>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-info">{{ roadmap.follower_count }} followers</span>
+                            <span class="badge bg-secondary">{{ roadmap.channel_count }} channels</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group w-100">
+                            <a href="{% url 'roadmaps:detail' roadmap.id %}" class="btn btn-outline-primary btn-sm">View</a>
+                            <a href="{% url 'roadmaps:update' roadmap.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-road fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">You haven't created any roadmaps yet</h5>
+            <a href="{% url 'roadmaps:create' %}" class="btn btn-primary">Create Your First Roadmap</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Followed Roadmaps -->
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0"><i class="fas fa-bookmark"></i> Roadmaps I'm Following</h4>
+    </div>
+    <div class="card-body">
+        {% if followed_with_progress %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Roadmap</th>
+                        <th>Progress</th>
+                        <th>Videos</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in followed_with_progress %}
+                    {% with follow=item.follow progress=item.progress_data %}
+                    <tr class="{% if follow.is_completed %}table-success{% endif %}">
+                        <td>
+                            <strong>
+                                <a href="{% url 'roadmaps:detail' follow.roadmap.id %}" class="text-decoration-none">
+                                    {{ follow.roadmap.title }}
+                                </a>
+                            </strong>
+                            <br>
+                            <small class="text-muted">by {{ follow.roadmap.owner.username }}</small>
+                        </td>
+                        <td>
+                            <div class="progress progress-thin mb-1" style="width: 120px;">
+                                <div class="progress-bar {% if follow.is_completed %}bg-success{% else %}bg-primary{% endif %}" 
+                                     style="width: {{ progress.overall_progress }}%">
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ progress.overall_progress }}% complete</small>
+                        </td>
+                        <td>
+                            <small>{{ progress.total_completed_videos }}/{{ progress.total_videos }} videos</small>
+                        </td>
+                        <td>
+                            {% if follow.is_completed %}
+                            <span class="badge bg-success">Completed</span>
+                            {% else %}
+                            <span class="badge bg-warning">In Progress</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'roadmaps:detail' follow.roadmap.id %}" class="btn btn-sm btn-outline-primary">
+                                {% if follow.is_completed %}Review{% else %}Continue{% endif %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-compass fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">You're not following any roadmaps yet</h5>
+            <a href="{% url 'roadmaps:list' %}" class="btn btn-primary">Browse Roadmaps</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
