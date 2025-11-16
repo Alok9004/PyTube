@@ -5,8 +5,7 @@ __pycache__/
 *.pyo
 *.pyd
 
-# SQLite database
-db.sqlite3
+# SQLite databas
 env/
 
 # Ignore Django migration cache
